@@ -15,6 +15,8 @@ app.set('view engine','ejs')
 // app.use is for using middleware
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(express.urlencoded({ extended : true }));
+
 // Connect to DB
 mongoose.connect(process.env.MONGODB_URL, {
   useUnifiedTopology: true,
@@ -32,10 +34,18 @@ db.once('open', function() {
 
 });
 
-app.get('/animals', function(request, response){
+app.get('/animals', function(req, res){
   Animal.find(function(err, animals) {
     console.log(animals);
-    response.render('./pages/animals', {animals: animals})
+    res.render('./pages/animals', {animals: animals})
+  });
+})
+
+app.post('/animals', function(req, res){
+  const animal = new Animal(req.body);
+  animal.save(function(err) {
+    if (err) return res.status(500).send(err);
+    return res.send(`<p>Thanks for the ${req.body.title}.</p>`);
   });
 })
 
